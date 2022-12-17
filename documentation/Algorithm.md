@@ -3,7 +3,7 @@ Charasort implements a simple merge sort algorithm, with the singular exception 
 ```
 [A, B, C, D, E ,F, G, H] -> [[A], [B], [C], [D], [E] ,[F], [G], [H]]
 ```
-2. The list of lists is traversed.  The first two populated lists are compared against each other and the first elemet of each list is compared.  Each 'compare' queries the user to select the element.  When an element is selected, it is added to a new list which will contain the result of mergeing the two lists and removed from its current list.  If either list becomes empty, the remaining elements in the non-empty list are appended to the result list.  When both lists are empty, the next two lists are considered.  
+2. The list of lists is traversed.  The first two lists are compared against each other and the first elemet of each list is compared.  Each 'compare' queries the user to select the element.  When an element is selected, it is added to a new list which will contain the result of mergeing the two lists and removed from its current list.  If either list becomes empty, the remaining elements in the non-empty list are appended to the result list.  When both lists are empty, the next two lists are considered.  If the end of the list of lists is reached, we continue onto another loop.  
 ```
 Battle 01: A vs B
 > user picks A
