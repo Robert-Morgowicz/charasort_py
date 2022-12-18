@@ -4,8 +4,10 @@ import sys
 
 import chara
 
-def load_from_datapath(datapath : str) -> list[chara]:
+#charalist = list[chara]
+
+def load_from_datapath(datapath : str) -> list:
     ret = []
     for file in os.listdir(datapath):
-        filename = os.basename(file)
-        ret.append(chara(filename))
+        ret.append(chara.chara(file))
+    return ret

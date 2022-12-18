@@ -9,22 +9,26 @@ import pygame
 # this project libraries
 import chara
 import loader
+import window
 
 global debug
 global history
 global redo_buffer
+global game_window
 
 def query_compare(chara1 : chara, chara2 : chara, history, redo_buffer, battle_no):
     # if there's history, allow the undo
     # if there's redo_buffer allow the redo
-    
-    battle_no = battle_no + 1
-    return one_won, winner
 
-def sort(charas : list[chara]) -> list[chara]:
-    # TODO: how to track history
-    # perhaps just capture the full state of the lists in loops (list of lists, next_of_lists, next charas)
-    # at each user step
+    # draw the battle screen
+    global game_window
+    game_window.draw_battle()
+    battle_no = battle_no + 1
+    # return one_won, winner
+    return True, chara1
+
+def sort(charas : list) -> list:
+    # TODO: tracking history
     global history
     global redo_buffer
     # starting length for loop control
@@ -38,6 +42,7 @@ def sort(charas : list[chara]) -> list[chara]:
     ind2 = 1
     next_of_lists = []
     history = [(list_of_lists, next_of_lists, [])]
+    redo_buffer = []
     # track number of battles
     battle_no = 1
     # until we have a full sorted list
@@ -96,6 +101,8 @@ def main():
                         help="random seed for list randomization")
     parser.add_argument("--history", type=int,
                         help="number of steps to keep as history for undo (default=1) input -1 for full history")
+    parser.add_argument("--resolution", type=str,
+                        help="target resolution for game window of form NNNNxMMMM")
     # parse arguments
     args = parser.parse_args()
     # enable debug mode
@@ -104,8 +111,17 @@ def main():
         debug = True
     if args.seed:
         random.seed(args.seed)
+    if args.resolution:
+        [xres, yres] = args.resolution.splittext("x")
+    else:
+        xres = 1280
+        yres = 720
+    global game_window
+    game_window = window.window(xres, yres)
+    game_window.draw_loading(args.datapath)
     # load images and construct charas in list of charas
     charas = loader.load_from_datapath(args.datapath)
+    game_window.draw_start(charas, args.datapath)
     # sort the list of charas
     sorted_charas = sort(charas)
     # display results screen

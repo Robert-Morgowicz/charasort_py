@@ -4,7 +4,7 @@ import os
 class chara:
     def __init__(self,filename):
         # extract name from filename
-        raw_name = os.basename(filename).split(".")[0]
+        raw_name = os.path.basename(filename).split(".")[0]
         # decompose name into components and capitalize each
         spaced_name = raw_name.replace("_"," ")
         list_name = spaced_name.split(" ")
