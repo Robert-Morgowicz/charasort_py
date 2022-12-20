@@ -9,5 +9,5 @@ import chara
 def load_from_datapath(datapath : str) -> list:
     ret = []
     for file in os.listdir(datapath):
-        ret.append(chara.chara(file))
+        ret.append(chara.chara(datapath+file))
     return ret
