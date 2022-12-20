@@ -23,10 +23,13 @@ class chara:
         self.tied = False
 
     def __str__(self):
-        return f"{self.name}"
+        return self.__repr__()
 
     def __repr__(self):
-        return f"{self.name}"
+        ret = f"{self.name}"
+        if self.tied:
+            ret = ret + "(T)"
+        return ret
 
     def print(self):
         print(str(self))

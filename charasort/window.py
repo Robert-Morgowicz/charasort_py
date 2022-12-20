@@ -9,17 +9,22 @@ import chara
 # colors
 black = 0, 0, 0
 grey = 200, 200, 200
+l_green = 150, 255, 150
 red = 255, 0, 0
 white = 255, 255, 255
 
 # button actions for battle screen
 class Action(enum.Enum):
-    QUIT      = 0
-    LEFT_WIN  = 1
-    RIGHT_WIN = 2
-    TIE       = 3
-    UNDO      = 4
-    REDO      = 5
+    QUIT        = 0
+    LEFT_WIN    = 1
+    RIGHT_WIN   = 2
+    TIE         = 3
+    UNDO        = 4
+    REDO        = 5
+    AUTO        = 6
+    APPEND      = 7
+    APPEND_PASS = 8
+    NEW_ROUND   = 9
 
 class button:
     def __init__(self, x, y, width, height, text, font, screen, active=True):
@@ -46,7 +51,8 @@ class button:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if pygame.mouse.get_pressed()[0]:
                 if self.rect.collidepoint(x, y):
-                    return True
+                    if self.active:
+                        return True
 
 class charabutton(button):
     def __init__(self, x, y, width, height, font, screen, chara):
@@ -145,7 +151,8 @@ class window:
                      chara2 : chara, 
                      can_undo : bool, 
                      can_redo : bool, 
-                     battle_no : int) -> Action:
+                     battle_no : int,
+                     expect_no : int) -> Action:
         # draw battle screen
         self.screen.fill(white)
         # battle No.
@@ -155,6 +162,7 @@ class window:
         battle_no_rect.top = 0
         self.screen.blit(battle_no_text, battle_no_rect)
         # progress bar
+        percet = int((battle_no / expect_no) * 100)
         # TODO
         # character selects
         chara1_button = charabutton(self.xres / 4, self.yres / 2, self.xres / 3, 6 * self. yres / 8, self.text_font, self.screen, chara1)
@@ -169,6 +177,8 @@ class window:
         undo_button.draw()
         redo_button.draw()
         pygame.display.flip()
+        # covered Characters
+        # TODO
         # wait for user action
         while True:
             for event in pygame.event.get():
