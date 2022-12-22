@@ -55,33 +55,32 @@ class button:
                         return True
 
 class charabutton(button):
-    def __init__(self, x, y, width, height, font, screen, chara):
+    def __init__(self, x, y, width, height, text_plus, font, screen, chara):
         text = chara.name
         super().__init__(x, y, width, height, text, font, screen)
+        # how much space to give the text below
+        self.text_plus = text_plus
         # scale image to fit box, preserving dimensions
         img_width = chara.image.get_rect().width
         img_height = chara.image.get_rect().height
-        x_bleed = img_width - (width - 2)
-        y_bleed = img_height - (height - 2)
+        x_bleed = (img_width - width) / img_width
+        y_bleed = (img_height - height) / img_height
         if x_bleed > 0 or y_bleed > 0:
             # x will bleed over more, truncate by x dimension
-            if x_bleed > y_bleed:
-                y_proportional = int(((width - 2) / img_width) * img_height)
-                self.image = pygame.transform.smoothscale(chara.image, (width - 2, y_proportional))
+            if x_bleed >= y_bleed:
+                y_proportional = int((width / img_width) * img_height)
+                self.image = pygame.transform.smoothscale(chara.image, (width, y_proportional))
             # y will bleed over more
             else:
-                x_proportional = int(((height - 2) / img_height) * img_width) + 2
-                self.image = pygame.transform.smoothscale(chara.image, (x_proportional, height - 2))
+                x_proportional = int((height / img_height) * img_width)
+                self.image = pygame.transform.smoothscale(chara.image, (x_proportional, height))
         else:
             self.image = self.image
 
     def draw(self):
-        # border
-        pygame.draw.rect(self.screen, black, self.rect, width=1, border_radius=0)
         # superborder
         superborder_rect = self.rect.copy()
-        superborder_rect.height = superborder_rect.height + 50
-        pygame.draw.rect(self.screen, black, superborder_rect, width=1, border_radius=0)
+        superborder_rect.height = superborder_rect.height + self.text_plus
         # character image
         img_rect = self.image.get_rect()
         img_rect.center = self.rect.center
@@ -92,6 +91,10 @@ class charabutton(button):
         text_rect = text_obj.get_rect()
         text_rect.center = lower_rect.center
         self.screen.blit(text_obj, text_rect)
+        # draw borders last
+        # border
+        pygame.draw.rect(self.screen, black, self.rect, width=1, border_radius=0)
+        pygame.draw.rect(self.screen, black, superborder_rect, width=1, border_radius=0)
 
 
 class window:
@@ -164,17 +167,25 @@ class window:
         battle_no_rect.top = 0
         self.screen.blit(battle_no_text, battle_no_rect)
         # progress bar
-        percet = int((battle_no / expect_no) * 100)
-        # TODO
+        decimal = battle_no / expect_no
+        percent = int(decimal * 100)
+        progress_border = pygame.Rect((self.xgrid[1], self.ygrid[1]), (self.xgrid[-2], self.ygrid[1]))
+        progress_bar = pygame.Rect((self.xgrid[1], self.ygrid[1]), (int(decimal * self.xgrid[-2]), self.ygrid[1]))
+        progress_text = self.text_font.render(f"{percent}%", True, black)
+        progress_rect = progress_text.get_rect()
+        progress_rect.center = progress_border.center
+        pygame.draw.rect(self.screen, l_green, progress_bar, width=0, border_radius=0)
+        pygame.draw.rect(self.screen, black, progress_border, width=1, border_radius=0)
+        self.screen.blit(progress_text, progress_rect)
         # character selects
-        chara1_button = charabutton(self.xres / 4, self.yres / 2, self.xres / 3, 6 * self. yres / 8, self.text_font, self.screen, chara1)
-        chara2_button = charabutton(3 * (self.xres / 4), self.yres / 2, self.xres / 3, 6 * self. yres / 8, self.text_font, self.screen, chara2)
+        chara1_button = charabutton(self.xres / 4, self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, chara1)
+        chara2_button = charabutton(3 * (self.xres / 4), self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, chara2)
         chara1_button.draw()
         chara2_button.draw()
         # action buttons
-        tie_button  = button(self.xres / 2, self.yres / 8, 100, 50, "Tie", self.text_font, self.screen)
-        undo_button = button(self.xres / 2, self.yres / 4, 100, 50, "Undo", self.text_font, self.screen, can_undo)
-        redo_button = button(self.xres / 2, 3 * (self.yres / 8), 100, 50, "Redo", self.text_font, self.screen, can_redo)
+        tie_button  = button(self.xres / 2, self.ygrid[3], self.xgrid[2], self.ygrid[1], "Tie", self.text_font, self.screen)
+        undo_button = button(self.xres / 2, self.ygrid[5], self.xgrid[2], self.ygrid[1], "Undo", self.text_font, self.screen, can_undo)
+        redo_button = button(self.xres / 2, self.ygrid[7], self.xgrid[2], self.ygrid[1], "Redo", self.text_font, self.screen, can_redo)
         tie_button.draw()
         undo_button.draw()
         redo_button.draw()
