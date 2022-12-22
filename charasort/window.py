@@ -99,11 +99,13 @@ class window:
         pygame.init()
         pygame.display.set_caption("charasort")
         self.screen = pygame.display.set_mode((xres, yres))
-        self.title_font = pygame.font.SysFont("arial", 64)
-        self.subtitle_font = pygame.font.SysFont("arial", 48)
-        self.text_font = pygame.font.SysFont("arial", 32)
         self.xres = xres
         self.yres = yres
+        self.title_font = pygame.font.SysFont("arial", int(yres/10))
+        self.subtitle_font = pygame.font.SysFont("arial", int(yres/16))
+        self.text_font = pygame.font.SysFont("arial", int(yres/20))
+        self.xgrid = [int((i / 16) * xres) for i in range(16)]
+        self.ygrid = [int((i / 16) * yres) for i in range(16)]
 
     def loading(self, datapath):
         # white out screen
@@ -122,11 +124,11 @@ class window:
         self.screen.fill(white)
         title_text = self.title_font.render("Open Character Sorter", True, black)
         title_rect = title_text.get_rect()
-        title_rect.center = (self.xres / 2, 100)
+        title_rect.center = (self.xres / 2, self.ygrid[2])
         self.screen.blit(title_text, title_rect)
         subtitle_text = self.subtitle_font.render("a.k.a charasort", True, black)
         subtitle_rect = subtitle_text.get_rect()
-        subtitle_rect.center = (self.xres / 2, 150)
+        subtitle_rect.center = (self.xres / 2, self.ygrid[4])
         self.screen.blit(subtitle_text, subtitle_rect)
         # draw loading text
         loading_text = self.text_font.render(f"loaded {len(charas)} files from {datapath}", True, black)
@@ -135,7 +137,7 @@ class window:
         loading_rect.bottom = self.yres
         self.screen.blit(loading_text, loading_rect)
         # draw start button
-        start_button = button(self.xres / 2, self.yres / 2, 100, 50, "Start", self.text_font, self.screen)
+        start_button = button(self.xres / 2, self.yres / 2, self.xgrid[2], self.ygrid[1], "Start", self.text_font, self.screen)
         start_button.draw()
         pygame.display.flip()
         # wait for start press

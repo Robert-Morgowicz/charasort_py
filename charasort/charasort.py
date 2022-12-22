@@ -34,47 +34,54 @@ class history_entry():
         self.tied = tied
 
     def redo(self):
+        global next_charas
         match self.action:
             case window.Action.RIGHT_WIN:
                 # move the element back
                 self.dest_list.append(self.src_list[0])
                 self.src_list.pop(0)
+                next_charas = self.dest_list
             case window.Action.LEFT_WIN:
                 # move the element back
                 self.dest_list.append(self.src_list[0])
                 self.src_list.pop(0)
+                next_charas = self.dest_list
             case window.Action.TIE:
                 # as above but unset tie
                 self.dest_list.append(self.src_list[0])
                 self.src_list.pop(0)
                 self.tied.tied = True
-            case window.Action.REDO:
-                pass
-            case window.Action.UNDO:
-                pass
-            case window.Action.AUTO:
-                # move the element back
-                self.dest_list.append(self.src_list[0])
-                self.src_list.pop(0)
-            case window.Action.APPEND:
-                self.dest_list.append(self.src_list)
-                self.ind1 = self.ind1 + 2
-                self.ind2 = self.ind2 + 2
-                global next_charas
-                next_charas = []
-            case window.Action.APPEND_PASS:
-                self.dest_list.append(self.src_list[ind1].copy())
-                self.src_list[ind1].clear()
-            case window.Action.NEW_ROUND:
-                global list_of_lists
-                global next_of_lists
-                list_of_lists = next_of_lists
-                next_of_lists = []
-                self.ind1 = 0
-                self.ind2 = 2
+                next_charas = self.dest_list
+            #case window.Action.REDO:
+            #    pass
+            #case window.Action.UNDO:
+            #    pass
+            #case window.Action.AUTO:
+            #    # move the element back
+            #    self.dest_list.append(self.src_list[0])
+            #    self.src_list.pop(0)
+            #case window.Action.APPEND:
+            #    self.dest_list.append(self.src_list)
+            #    self.ind1 = self.ind1 + 2
+            #    self.ind2 = self.ind2 + 2
+            #    global next_charas
+            #    next_charas = []
+            #case window.Action.APPEND_PASS:
+            #    self.dest_list.append(self.src_list[ind1].copy())
+            #    self.src_list[ind1].clear()
+            #case window.Action.NEW_ROUND:
+            #    global list_of_lists
+            #    global next_of_lists
+            #    list_of_lists = next_of_lists
+            #    next_of_lists = []
+            #    self.ind1 = 0
+            #    self.ind2 = 2
         return self.ind1, self.ind2
 
     def inverse(self):
+        global list_of_lists
+        global next_of_lists
+        global next_charas
         match self.action:
             case window.Action.RIGHT_WIN:
                 # move the element back
@@ -82,6 +89,7 @@ class history_entry():
                 self.dest_list.pop(-1)
             case window.Action.LEFT_WIN:
                 # move the element back
+                global next_charas
                 self.src_list.insert(0, self.dest_list[-1])
                 self.dest_list.pop(-1)
             case window.Action.TIE:
@@ -95,19 +103,26 @@ class history_entry():
                 pass
             case window.Action.AUTO:
                 # move the element back
+                print("in auto")
+                print(self.src_list)
+                print(self.dest_list)
+                print(self.ind1)
+                print(self.ind2)
+                print(self.action)
+                print(self.user)
                 self.src_list.insert(0, self.dest_list[-1])
                 self.dest_list.pop(-1)
             case window.Action.APPEND:
                 self.src_list = self.dest_list[-1]
                 self.dest_list.pop(-1)
-                global next_charas
                 next_charas = self.src_list
+                next_of_lists = self.dest_list
             case window.Action.APPEND_PASS:
                 self.src_list[self.ind1] = self.dest_list[-1]
                 self.dest_list.pop(-1)
+                list_of_lists = self.src_list
+                next_of_lists = self.dest_list
             case window.Action.NEW_ROUND:
-                global list_of_lists
-                global next_of_lists
                 list_of_lists = self.src_list
                 next_of_lists = self.dest_list
                 
@@ -153,7 +168,11 @@ def query_compare(ind1, ind2, expect_no):
     #    history.pop(0)
     charas1 = list_of_lists[ind1]
     charas2 = list_of_lists[ind2]
-    if not charas1:
+    if not charas1 and not charas2:
+        # how did you get here?
+        # this is the loop control case
+        return ind1, ind2
+    elif not charas1:
         next_charas.append(charas2[0])
         charas2.pop(0)
         action = window.Action.AUTO
@@ -178,6 +197,15 @@ def query_compare(ind1, ind2, expect_no):
     else: 
         # draw the battle screen
         action = game_window.battle(charas1[0], charas2[0], allow_undo, allow_redo, battle_no, expect_no)
+        # advance redo buffer if returned user action matches first entry of redo
+        # clear redo buffer if returned user action does not match what's in the redo buffer
+        if (redo_buffer != []):
+            if (action == window.Action.UNDO) or (action == window.Action.REDO):
+                pass
+            elif (redo_buffer[0].action == action):
+                redo_buffer.pop(0)
+            else:
+                redo_buffer = []
     match action:
         case window.Action.LEFT_WIN:
             battle_no = battle_no + 1
@@ -201,7 +229,6 @@ def query_compare(ind1, ind2, expect_no):
         case window.Action.UNDO:
             if debug:
                 print("BEGIN UNDO")
-            redo_adds = []
             history.reverse()
             history_elt = history[0]
             while not history_elt.user:
@@ -213,7 +240,7 @@ def query_compare(ind1, ind2, expect_no):
             if debug:
                 print(history_elt)
             ind1, ind2 = history_elt.inverse()
-            redo_buffer.append(history_elt)
+            redo_buffer.insert(0, history_elt)
             history.pop(0)
             history.reverse()
             battle_no = battle_no - 1
@@ -225,7 +252,7 @@ def query_compare(ind1, ind2, expect_no):
             redo_elt = redo_buffer[0]
             if debug:
                 print(redo_elt)
-            redo_elt.redo()
+            ind1, ind2 = redo_elt.redo()
             history.append(redo_elt)
             redo_buffer.pop(0)
             battle_no = battle_no + 1
@@ -246,7 +273,7 @@ def sort(charas : list) -> list:
     # starting length for loop control
     startlen = len(charas)
     # expeced number of battles is n * log n
-    expect_no = startlen * int(math.log(startlen))
+    expect_no = int(startlen * math.log(startlen, 3))
     if debug:
         print(expect_no)
     # shuffle list
@@ -271,7 +298,7 @@ def sort(charas : list) -> list:
             if debug:
                 print("base case")
             history.append(history_entry(False, list_of_lists, next_of_lists, window.Action.NEW_ROUND, ind1, ind2))
-            list_of_lists = next_of_lists
+            list_of_lists = next_of_lists.copy()
             ind1 = 0
             ind2 = 1
             next_of_lists = []
