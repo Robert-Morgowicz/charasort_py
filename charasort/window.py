@@ -152,12 +152,35 @@ class window:
                     return
         # TODO: loading by selecting directory from file explorer option
 
-    def battle(self, chara1 : chara, 
-                     chara2 : chara, 
+    def draw_guarded(self, charas1, charas2):
+        i = 1
+        while i < len(charas1) and i < 2:
+            if charas1[i].tied:
+                guarded_chara_text = self.text_font.render(f"Guards: {charas1[i].name}", True, grey)
+            else:
+                guarded_chara_text = self.text_font.render(charas1[i].name, True, black)
+            guarded_chara_rect = guarded_chara_text.get_rect()
+            guarded_chara_rect.center = self.xres / 4, self.ygrid[14+i]
+            self.screen.blit(guarded_chara_text, guarded_chara_rect)
+            i = i + 1
+        i = 1
+        while i < len(charas2) and i < 2:
+            if charas2[i].tied:
+                guarded_chara_text = self.text_font.render(f"Guards: {charas2[i].name}", True, grey)
+            else:
+                guarded_chara_text = self.text_font.render(charas2[i].name, True, black)
+            guarded_chara_rect = guarded_chara_text.get_rect()
+            guarded_chara_rect.center = 3 * int(self.xres / 4), self.ygrid[14+i]
+            self.screen.blit(guarded_chara_text, guarded_chara_rect)
+            i = i + 1
+
+    def battle(self, charas1 : list, 
+                     charas2 : list, 
                      can_undo : bool, 
                      can_redo : bool, 
                      battle_no : int,
-                     expect_no : int) -> Action:
+                     expect_no : int,
+                     show_guarded : bool) -> Action:
         # draw battle screen
         self.screen.fill(white)
         # battle No.
@@ -178,10 +201,13 @@ class window:
         pygame.draw.rect(self.screen, black, progress_border, width=1, border_radius=0)
         self.screen.blit(progress_text, progress_rect)
         # character selects
-        chara1_button = charabutton(self.xres / 4, self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, chara1)
-        chara2_button = charabutton(3 * (self.xres / 4), self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, chara2)
+        chara1_button = charabutton(self.xres / 4, self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, charas1[0])
+        chara2_button = charabutton(3 * int(self.xres / 4), self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, charas2[0])
         chara1_button.draw()
         chara2_button.draw()
+        # characters guarding info
+        if show_guarded:
+            self.draw_guarded(charas1, charas2)
         # action buttons
         tie_button  = button(self.xres / 2, self.ygrid[3], self.xgrid[2], self.ygrid[1], "Tie", self.text_font, self.screen)
         undo_button = button(self.xres / 2, self.ygrid[5], self.xgrid[2], self.ygrid[1], "Undo", self.text_font, self.screen, can_undo)

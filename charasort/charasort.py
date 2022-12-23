@@ -35,47 +35,27 @@ class history_entry():
 
     def redo(self):
         global next_charas
+        global list_of_lists
         match self.action:
             case window.Action.RIGHT_WIN:
                 # move the element back
                 self.dest_list.append(self.src_list[0])
                 self.src_list.pop(0)
                 next_charas = self.dest_list
+                list_of_lists[self.ind2] = self.src_list
             case window.Action.LEFT_WIN:
                 # move the element back
                 self.dest_list.append(self.src_list[0])
                 self.src_list.pop(0)
                 next_charas = self.dest_list
+                list_of_lists[self.ind1] = self.src_list
             case window.Action.TIE:
                 # as above but unset tie
                 self.dest_list.append(self.src_list[0])
                 self.src_list.pop(0)
                 self.tied.tied = True
                 next_charas = self.dest_list
-            #case window.Action.REDO:
-            #    pass
-            #case window.Action.UNDO:
-            #    pass
-            #case window.Action.AUTO:
-            #    # move the element back
-            #    self.dest_list.append(self.src_list[0])
-            #    self.src_list.pop(0)
-            #case window.Action.APPEND:
-            #    self.dest_list.append(self.src_list)
-            #    self.ind1 = self.ind1 + 2
-            #    self.ind2 = self.ind2 + 2
-            #    global next_charas
-            #    next_charas = []
-            #case window.Action.APPEND_PASS:
-            #    self.dest_list.append(self.src_list[ind1].copy())
-            #    self.src_list[ind1].clear()
-            #case window.Action.NEW_ROUND:
-            #    global list_of_lists
-            #    global next_of_lists
-            #    list_of_lists = next_of_lists
-            #    next_of_lists = []
-            #    self.ind1 = 0
-            #    self.ind2 = 2
+                list_of_lists[self.ind1] = self.src_list
         return self.ind1, self.ind2
 
     def inverse(self):
@@ -132,10 +112,11 @@ class history_entry():
         return f"User:{self.user}, Action:{self.action}"
 
 
-            
-
-def set_state():
-    pass
+def len_list_list(l : list):
+    acc = 0
+    for l_elt in l:
+        acc = acc + len(l_elt)
+    return acc
 
 def query_compare(ind1, ind2, expect_no):
     global game_window
@@ -143,6 +124,7 @@ def query_compare(ind1, ind2, expect_no):
     global history_len
     global redo_buffer
     global battle_no
+    global show_guarded
     global debug
     global list_of_lists
     global next_of_lists
@@ -196,7 +178,7 @@ def query_compare(ind1, ind2, expect_no):
         history.append(history_entry(False, charas2, next_charas, window.Action.AUTO, ind1, ind2))
     else: 
         # draw the battle screen
-        action = game_window.battle(charas1[0], charas2[0], allow_undo, allow_redo, battle_no, expect_no)
+        action = game_window.battle(charas1, charas2, allow_undo, allow_redo, battle_no, expect_no, show_guarded)
         # advance redo buffer if returned user action matches first entry of redo
         # clear redo buffer if returned user action does not match what's in the redo buffer
         if (redo_buffer != []):
@@ -232,9 +214,11 @@ def query_compare(ind1, ind2, expect_no):
             history.reverse()
             history_elt = history[0]
             while not history_elt.user:
-                if debug:
-                    print(history_elt)
-                history_elt.inverse()
+                ind1, ind2 = history_elt.inverse()
+                # reassign charas1, 2 to fix next round woes
+                if not history_elt.action == window.Action.APPEND_PASS:
+                    charas1 = list_of_lists[ind1]
+                    charas2 = list_of_lists[ind2]
                 history.pop(0)
                 history_elt = history[0]
             if debug:
@@ -252,6 +236,8 @@ def query_compare(ind1, ind2, expect_no):
             redo_elt = redo_buffer[0]
             if debug:
                 print(redo_elt)
+                print(redo_elt.src_list)
+                print(redo_elt.dest_list)
             ind1, ind2 = redo_elt.redo()
             history.append(redo_elt)
             redo_buffer.pop(0)
@@ -293,14 +279,14 @@ def sort(charas : list) -> list:
             # there was still one more odd-numbered list that must be carried forward to next round
             if not ind1 >= len(list_of_lists):
                 next_of_lists.append(list_of_lists[ind1].copy())
-                list_of_lists[ind1].clear()
+                #list_of_lists[ind1].clear()
                 history.append(history_entry(False, list_of_lists, next_of_lists, window.Action.APPEND_PASS, ind1, ind2))
             if debug:
                 print("base case")
-            history.append(history_entry(False, list_of_lists, next_of_lists, window.Action.NEW_ROUND, ind1, ind2))
-            list_of_lists = next_of_lists.copy()
             ind1 = 0
             ind2 = 1
+            history.append(history_entry(False, list_of_lists, next_of_lists, window.Action.NEW_ROUND, ind1, ind2))
+            list_of_lists = next_of_lists.copy()
             next_of_lists = []
             continue
         # name source lists and initialize dest list
@@ -309,12 +295,21 @@ def sort(charas : list) -> list:
         next_charas = [] 
         # while neither list is empty
         while list_of_lists[ind1] or list_of_lists[ind2]:
+            if debug:
+                # invariant check
+                total_charas = len_list_list(list_of_lists) + len_list_list(next_of_lists) + len(next_charas)
+                if total_charas != startlen:
+                    print("ERROR: data has been lost")
+                    print(list_of_lists)
+                    print(next_of_lists)
+                    print(next_charas)
+                    raise ValueError("data lost")
             ind1, ind2 = query_compare(ind1, ind2, expect_no)     
         
         next_of_lists.append(next_charas)
+        history.append(history_entry(False, next_charas.copy(), next_of_lists, window.Action.APPEND, ind1, ind2))
         ind1 = ind1 + 2
         ind2 = ind2 + 2
-        history.append(history_entry(False, next_charas, next_of_lists, window.Action.APPEND, ind1, ind2))
     
     return list_of_lists[0]
 
@@ -335,6 +330,8 @@ def main():
                         help="number of steps to keep as history for undo (default=1) input -1 for full history")
     parser.add_argument("--resolution", type=str,
                         help="target resolution for game window of form NNNNxMMMM")
+    parser.add_argument("--show-guarded", action="store_true",
+                        help="displays the name of the character behind the current character below")
     # parse arguments
     args = parser.parse_args()
     # enable debug mode
@@ -342,12 +339,17 @@ def main():
     global history
     global history_len
     global redo_buffer
+    global show_guarded
     history = []
     redo_buffer = []
     if args.debug:
         debug = True
     else:
         debug = False
+    if args.show_guarded:
+        show_guarded = True
+    else:
+        show_guarded = False
     if args.seed:
         random.seed(args.seed)
     if args.history:
