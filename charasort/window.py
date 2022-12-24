@@ -55,9 +55,9 @@ class button:
                         return True
 
 class charabutton(button):
-    def __init__(self, x, y, width, height, text_plus, font, screen, chara):
+    def __init__(self, x, y, width, height, text_plus, font, screen, chara, active=True):
         text = chara.name
-        super().__init__(x, y, width, height, text, font, screen)
+        super().__init__(x, y, width, height, text, font, screen, active)
         # how much space to give the text below
         self.text_plus = text_plus
         # scale image to fit box, preserving dimensions
@@ -75,7 +75,7 @@ class charabutton(button):
                 x_proportional = int((height / img_height) * img_width)
                 self.image = pygame.transform.smoothscale(chara.image, (x_proportional, height))
         else:
-            self.image = self.image
+            self.image = chara.image
 
     def draw(self):
         # superborder
@@ -107,6 +107,7 @@ class window:
         self.title_font = pygame.font.SysFont("arial", int(yres/10))
         self.subtitle_font = pygame.font.SysFont("arial", int(yres/16))
         self.text_font = pygame.font.SysFont("arial", int(yres/20))
+        self.list_font = pygame.font.SysFont("arial", int(yres/52))
         self.xgrid = [int((i / 16) * xres) for i in range(16)]
         self.ygrid = [int((i / 16) * yres) for i in range(16)]
 
@@ -114,7 +115,7 @@ class window:
         # white out screen
         self.screen.fill(white)
         # draw loading message
-        loading_text = self.title_font.render("Sorts are preparing.  Please wait warmly...", True, black)
+        loading_text = self.text_font.render("Sorts are preparing.  Please wait warmly...", True, black)
         loading_rect = loading_text.get_rect()
         loading_rect.right = self.xres
         loading_rect.bottom = self.yres
@@ -127,11 +128,11 @@ class window:
         self.screen.fill(white)
         title_text = self.title_font.render("Open Character Sorter", True, black)
         title_rect = title_text.get_rect()
-        title_rect.center = (self.xres / 2, self.ygrid[2])
+        title_rect.center = (self.xgrid[8], self.ygrid[2])
         self.screen.blit(title_text, title_rect)
         subtitle_text = self.subtitle_font.render("a.k.a charasort", True, black)
         subtitle_rect = subtitle_text.get_rect()
-        subtitle_rect.center = (self.xres / 2, self.ygrid[4])
+        subtitle_rect.center = (self.xgrid[8], self.ygrid[4])
         self.screen.blit(subtitle_text, subtitle_rect)
         # draw loading text
         loading_text = self.text_font.render(f"loaded {len(charas)} files from {datapath}", True, black)
@@ -140,7 +141,7 @@ class window:
         loading_rect.bottom = self.yres
         self.screen.blit(loading_text, loading_rect)
         # draw start button
-        start_button = button(self.xres / 2, self.yres / 2, self.xgrid[2], self.ygrid[1], "Start", self.text_font, self.screen)
+        start_button = button(self.xgrid[8], self.ygrid[8], self.xgrid[2], self.ygrid[1], "Start", self.text_font, self.screen)
         start_button.draw()
         pygame.display.flip()
         # wait for start press
@@ -156,21 +157,21 @@ class window:
         i = 1
         while i < len(charas1) and i < 2:
             if charas1[i].tied:
-                guarded_chara_text = self.text_font.render(f"Guards: {charas1[i].name}", True, grey)
+                guarded_chara_text = self.text_font.render(f"Tied: {charas1[i].name}", True, grey)
             else:
-                guarded_chara_text = self.text_font.render(charas1[i].name, True, black)
+                guarded_chara_text = self.text_font.render(f"Guards: {charas1[i].name}", True, black)
             guarded_chara_rect = guarded_chara_text.get_rect()
-            guarded_chara_rect.center = self.xres / 4, self.ygrid[14+i]
+            guarded_chara_rect.center = self.xgrid[4], self.ygrid[14+i]
             self.screen.blit(guarded_chara_text, guarded_chara_rect)
             i = i + 1
         i = 1
         while i < len(charas2) and i < 2:
             if charas2[i].tied:
-                guarded_chara_text = self.text_font.render(f"Guards: {charas2[i].name}", True, grey)
+                guarded_chara_text = self.text_font.render(f"Tied: {charas2[i].name}", True, grey)
             else:
-                guarded_chara_text = self.text_font.render(charas2[i].name, True, black)
+                guarded_chara_text = self.text_font.render(f"Guards: {charas2[i].name}", True, black)
             guarded_chara_rect = guarded_chara_text.get_rect()
-            guarded_chara_rect.center = 3 * int(self.xres / 4), self.ygrid[14+i]
+            guarded_chara_rect.center = self.xgrid[12], self.ygrid[14+i]
             self.screen.blit(guarded_chara_text, guarded_chara_rect)
             i = i + 1
 
@@ -201,17 +202,17 @@ class window:
         pygame.draw.rect(self.screen, black, progress_border, width=1, border_radius=0)
         self.screen.blit(progress_text, progress_rect)
         # character selects
-        chara1_button = charabutton(self.xres / 4, self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, charas1[0])
-        chara2_button = charabutton(3 * int(self.xres / 4), self.yres / 2, self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, charas2[0])
+        chara1_button = charabutton(self.xgrid[4], self.ygrid[8], self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, charas1[0])
+        chara2_button = charabutton(self.xgrid[12], self.ygrid[8], self.xgrid[5], self.ygrid[11], self.ygrid[1], self.text_font, self.screen, charas2[0])
         chara1_button.draw()
         chara2_button.draw()
         # characters guarding info
         if show_guarded:
             self.draw_guarded(charas1, charas2)
         # action buttons
-        tie_button  = button(self.xres / 2, self.ygrid[3], self.xgrid[2], self.ygrid[1], "Tie", self.text_font, self.screen)
-        undo_button = button(self.xres / 2, self.ygrid[5], self.xgrid[2], self.ygrid[1], "Undo", self.text_font, self.screen, can_undo)
-        redo_button = button(self.xres / 2, self.ygrid[7], self.xgrid[2], self.ygrid[1], "Redo", self.text_font, self.screen, can_redo)
+        tie_button  = button(self.xgrid[8], self.ygrid[3], self.xgrid[2], self.ygrid[1], "Tie", self.text_font, self.screen)
+        undo_button = button(self.xgrid[8], self.ygrid[5], self.xgrid[2], self.ygrid[1], "Undo", self.text_font, self.screen, can_undo)
+        redo_button = button(self.xgrid[8], self.ygrid[7], self.xgrid[2], self.ygrid[1], "Redo", self.text_font, self.screen, can_redo)
         tie_button.draw()
         undo_button.draw()
         redo_button.draw()
@@ -234,5 +235,71 @@ class window:
                 elif redo_button.click(event):
                     return Action.REDO
 
-    def result():
-        pass
+    def result(self, sorted_charas):
+        l_height = int(self.yres/52)
+        half_xgrid = int(self.xres/32)
+        display_images = 3
+        true_index = 0
+        display_index = 1
+        display_y = l_height
+        xgrid_pos = 1
+        display_x = self.xgrid[1]
+        self.screen.fill(white)
+        while true_index < len(sorted_charas):
+            chara = sorted_charas[true_index]
+            # only update index if not tied
+            if not chara.tied:
+                display_index = true_index + 1
+            # show character image
+            if true_index < display_images:
+                pass
+                # make a rect to get the center
+                reference_rect = pygame.Rect((display_x, display_y), (self.xgrid[2],  (9 * l_height)))
+                (x_center, y_center) = reference_rect.center
+                # construct charabutton
+                entry = charabutton(x_center, y_center, self.xgrid[2],  (9 * l_height), l_height, self.list_font, self.screen, chara)
+                # display charabutton
+                entry.draw()
+                # draw index border
+                index_border_rect = pygame.Rect((display_x - half_xgrid, display_y), (half_xgrid, 10 * l_height))
+                pygame.draw.rect(self.screen, black, index_border_rect, width=1, border_radius=0)
+                # draw index
+                index_text = self.list_font.render(f"{display_index}", True, black)
+                index_rect = index_text.get_rect()
+                index_rect.center = index_border_rect.center
+                self.screen.blit(index_text, index_rect)
+                # increment display y
+                display_y = display_y + (10 * l_height)
+            # just name
+            else:
+                pass
+                # draw border
+                border_rect = pygame.Rect((display_x, display_y), (self.xgrid[2], l_height))
+                pygame.draw.rect(self.screen, black, border_rect, width=1, border_radius=0)
+                # draw name
+                name_text = self.list_font.render(f"{chara.name}", True, black)
+                name_rect = name_text.get_rect()
+                name_rect.center = border_rect.center
+                self.screen.blit(name_text, name_rect)
+                # draw index border
+                index_border_rect = pygame.Rect((display_x - half_xgrid, display_y), (half_xgrid, l_height))
+                pygame.draw.rect(self.screen, black, index_border_rect, width=1, border_radius=0)
+                # draw index
+                index_text = self.list_font.render(f"{display_index}", True, black)
+                index_rect = index_text.get_rect()
+                index_rect.center = index_border_rect.center
+                self.screen.blit(index_text, index_rect)
+                # increment display y
+                display_y = display_y + l_height
+            # update to next column
+            if display_y >= (self.yres - l_height):
+                xgird_pos = xgrid_pos + 3
+                display_x = self.xgrid[xgrid_pos]
+                display_y = l_height
+            true_index = true_index + 1
+        
+        pygame.display.flip()
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    sys.exit()

@@ -83,13 +83,6 @@ class history_entry():
                 pass
             case window.Action.AUTO:
                 # move the element back
-                print("in auto")
-                print(self.src_list)
-                print(self.dest_list)
-                print(self.ind1)
-                print(self.ind2)
-                print(self.action)
-                print(self.user)
                 self.src_list.insert(0, self.dest_list[-1])
                 self.dest_list.pop(-1)
             case window.Action.APPEND:
@@ -259,7 +252,7 @@ def sort(charas : list) -> list:
     # starting length for loop control
     startlen = len(charas)
     # expeced number of battles is n * log n
-    expect_no = int(startlen * math.log(startlen, 3))
+    expect_no = int(startlen * math.log(startlen, 2.77))
     if debug:
         print(expect_no)
     # shuffle list
@@ -279,7 +272,6 @@ def sort(charas : list) -> list:
             # there was still one more odd-numbered list that must be carried forward to next round
             if not ind1 >= len(list_of_lists):
                 next_of_lists.append(list_of_lists[ind1].copy())
-                #list_of_lists[ind1].clear()
                 history.append(history_entry(False, list_of_lists, next_of_lists, window.Action.APPEND_PASS, ind1, ind2))
             if debug:
                 print("base case")
@@ -312,9 +304,6 @@ def sort(charas : list) -> list:
         ind2 = ind2 + 2
     
     return list_of_lists[0]
-
-def display_result(charas):
-    pass
 
 def main():
     # main function
@@ -357,7 +346,9 @@ def main():
     else:
         history_len = 1
     if args.resolution:
-        [xres, yres] = args.resolution.splittext("x")
+        [xstr, ystr] = args.resolution.split("x")
+        xres = int(xstr)
+        yres = int(ystr)
     else:
         xres = 1280
         yres = 720
@@ -370,7 +361,7 @@ def main():
     # sort the list of charas
     sorted_charas = sort(charas)
     # display results screen
-    display_result(sorted_charas)
+    game_window.result(sorted_charas)
 
 
 if __name__ == "__main__":
