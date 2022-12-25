@@ -252,7 +252,7 @@ def sort(charas : list) -> list:
     # starting length for loop control
     startlen = len(charas)
     # expeced number of battles is n * log n
-    expect_no = int(startlen * math.log(startlen, 2.77))
+    expect_no = int(startlen * math.log(startlen, 2.5))
     if debug:
         print(expect_no)
     # shuffle list
@@ -360,6 +360,7 @@ def main():
     game_window.start(charas, args.datapath)
     # sort the list of charas
     sorted_charas = sort(charas)
+    print(sorted_charas)
     # display results screen
     game_window.result(sorted_charas)
 

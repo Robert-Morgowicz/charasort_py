@@ -293,11 +293,10 @@ class window:
                 display_y = display_y + l_height
             # update to next column
             if display_y >= (self.yres - l_height):
-                xgird_pos = xgrid_pos + 3
+                xgrid_pos = xgrid_pos + 3
                 display_x = self.xgrid[xgrid_pos]
                 display_y = l_height
             true_index = true_index + 1
-        
         pygame.display.flip()
         while True:
             for event in pygame.event.get():

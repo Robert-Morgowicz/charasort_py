@@ -8,6 +8,8 @@ import chara
 
 def load_from_datapath(datapath : str) -> list:
     ret = []
-    for file in os.listdir(datapath):
-        ret.append(chara.chara(datapath+file))
+    for path, dirs, files in os.walk(datapath):
+        for file in files:
+            fullpath = os.path.join(path, file)
+            ret.append(chara.chara(fullpath))
     return ret
