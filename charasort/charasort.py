@@ -5,6 +5,9 @@ import random
 import time
 import argparse
 import math
+import tkinter
+from tkinter import filedialog
+import pathlib
 # 3rd party libraries
 import pygame
 # this project libraries
@@ -352,12 +355,21 @@ def main():
     else:
         xres = 1280
         yres = 720
+    if args.datapath:
+        datapath_prime = args.datapath
+    else:
+        tkinter.Tk().withdraw()
+        datapath = filedialog.askdirectory()
+        datapath_prime = r'{}'.format(datapath)
+    print(datapath_prime)
+    print(type(datapath_prime))
+    #datapath_obj = pathlib.Path(datapath_prime)
     global game_window
     game_window = window.window(xres, yres)
-    game_window.loading(args.datapath)
+    game_window.loading(datapath_prime)
     # load images and construct charas in list of charas
-    charas = loader.load_from_datapath(args.datapath)
-    game_window.start(charas, args.datapath)
+    charas = loader.load_from_datapath(datapath_prime)
+    game_window.start(charas, datapath_prime)
     # sort the list of charas
     sorted_charas = sort(charas)
     print(sorted_charas)
