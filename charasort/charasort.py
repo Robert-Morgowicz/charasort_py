@@ -361,8 +361,8 @@ def main():
         tkinter.Tk().withdraw()
         datapath = filedialog.askdirectory()
         datapath_prime = r'{}'.format(datapath)
-    print(datapath_prime)
-    print(type(datapath_prime))
+    #print(datapath_prime)
+    #print(type(datapath_prime))
     #datapath_obj = pathlib.Path(datapath_prime)
     global game_window
     game_window = window.window(xres, yres)
