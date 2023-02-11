@@ -65,15 +65,20 @@ class charabutton(button):
         img_height = chara.image.get_rect().height
         x_bleed = (img_width - width) / img_width
         y_bleed = (img_height - height) / img_height
+        # sanitize image format
+        #default_surface = pygame.Surface((1, 1), pygame.SRCALPHA)
+        #default_surface.set_colorkey(white)
+        self.image = chara.image.convert_alpha()
+        #self.image.set_alpha(100)
         if x_bleed > 0 or y_bleed > 0:
             # x will bleed over more, truncate by x dimension
             if x_bleed >= y_bleed:
                 y_proportional = int((width / img_width) * img_height)
-                self.image = pygame.transform.smoothscale(chara.image, (width, y_proportional))
+                self.image = pygame.transform.smoothscale(self.image, (width, y_proportional))
             # y will bleed over more
             else:
                 x_proportional = int((height / img_height) * img_width)
-                self.image = pygame.transform.smoothscale(chara.image, (x_proportional, height))
+                self.image = pygame.transform.smoothscale(self.image, (x_proportional, height))
         else:
             self.image = chara.image
 
